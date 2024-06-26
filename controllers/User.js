@@ -127,4 +127,51 @@ router.post("/logout", isLoggedIn, (req, res) => {
     res.json({ message: `User ${req.user.username} logged out!` });
 });
 
+
+const crypto = require('crypto');
+
+// Request password reset
+router.post('/request-reset', [
+  body('email').isEmail().withMessage('Enter a valid email address.')
+], async (req, res) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(404).json({ error: 'User not found.' });
+  }
+
+  const resetToken = crypto.randomBytes(20).toString('hex');
+  user.resetPasswordToken = resetToken;
+  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+  await user.save();
+
+  res.json({
+    message: 'Password reset token generated.',
+    resetToken,
+    resetUrl: `http://localhost:3001/reset/${resetToken}`
+  });
+});
+
+// Reset password
+router.post('/reset/:token', [
+    body('password').notEmpty().withMessage('Password cannot be empty.')
+  ], async (req, res) => {
+    const user = await User.findOne({
+      resetPasswordToken: req.params.token,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+  
+    if (!user) {
+      return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+    }
+  
+    user.password = await bcrypt.hash(req.body.password, 10);
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+  
+    res.json({ message: 'Password has been reset.' });
+  });
+  
+
 module.exports = router;

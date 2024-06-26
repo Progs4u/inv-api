@@ -4,7 +4,10 @@ const {Schema, model} = require("../middlewares/db.connection") // import Schema
 const UserSchema = new Schema({
     username: {type: String, unique: true, required: true},
     password: {type: String, required: true},
-    token: {type: String}
+    token: {type: String},
+    role: { type: String, default: 'user', enum: ['user', 'admin', 'manager'] },
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date } 
 })
 
 // User model

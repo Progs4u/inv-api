@@ -4,12 +4,17 @@
 FILES=(
   "server.js"
   "controllers/User.js"
+  "controllers/Admin.js"
   "middlewares/db.connection.js"
   "middlewares/global.js"
+  "middlewares/roleCheck.js"
   "models/User.js"
   ".env"
+  ".gitignore"
   "package.json"
   "README.md"
+  "ARCHITECTURE.md"
+  "CHANGELOG.md"
 )
 
 # Output file where all contents will be appended
