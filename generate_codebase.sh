@@ -23,13 +23,13 @@ for FILE in "${FILES[@]}"; do
   # Check if the file exists
   if [[ -f "$FILE" ]]; then
     # Append an empty line to the output file
-    echo "" >> "$OUTPUT_FILE"
+    echo "### FILENAME:" >> "$OUTPUT_FILE"
     
     # Append the path of the current file to the output file
-    echo "$FILE" >> "$OUTPUT_FILE"
+    echo "  $FILE" >> "$OUTPUT_FILE"
 
     # Append an empty line to the output file
-    echo "" >> "$OUTPUT_FILE"
+    echo "### CONTENT" >> "$OUTPUT_FILE"
     
     # Append the contents of the current file to the output file
     cat "$FILE" >> "$OUTPUT_FILE"
@@ -38,7 +38,11 @@ for FILE in "${FILES[@]}"; do
     echo "" >> "$OUTPUT_FILE"
 
     # Append an empty line to the output file
+    echo "###" >> "$OUTPUT_FILE"
+
+    # Append an empty line to the output file
     echo "" >> "$OUTPUT_FILE"
+
   else
     echo "File $FILE does not exist."
   fi

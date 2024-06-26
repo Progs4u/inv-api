@@ -1,5 +1,6 @@
-
-server.js
+### FILENAME:
+  server.js
+### CONTENT
 // IMPORT MAJOR PACKAGES
 require('dotenv').config(); // load .env
 
@@ -61,7 +62,11 @@ const httpsServer = https.createServer(credentials, app);
 
 // APP LISTENER
 httpsServer.listen(PORT, () => log.green("SERVER STATUS", `Listening on port ${PORT}`))
-controllers/User.js
+###
+
+### FILENAME:
+  controllers/User.js
+### CONTENT
 require("dotenv").config(); // import dotenv
 const { Router } = require('express'); // import express router
 const bcrypt = require("bcrypt"); // import bcrypt
@@ -192,7 +197,11 @@ router.post("/logout", isLoggedIn, (req, res) => {
 });
 
 module.exports = router;
-middlewares/db.connection.js
+###
+
+### FILENAME:
+  middlewares/db.connection.js
+### CONTENT
 require("dotenv").config() // load .env variables
 const mongoose = require("mongoose") //import fresh mongoose object
 const {log} = require("mercedlogger") // import merced logger
@@ -211,7 +220,11 @@ mongoose.connection
 
 // EXPORT CONNECTION
 module.exports = mongoose
-middlewares/global.js
+###
+
+### FILENAME:
+  middlewares/global.js
+### CONTENT
 require("dotenv").config(); // importing dotenv
 const jwt = require("jsonwebtoken"); // importing jsonwebtoken
 
@@ -279,7 +292,11 @@ module.exports = {
     isLoggedIn,
     revokeToken
 }
-models/User.js
+###
+
+### FILENAME:
+  models/User.js
+### CONTENT
 const {Schema, model} = require("../middlewares/db.connection") // import Schema & model
 
 // User Schema
@@ -293,11 +310,19 @@ const UserSchema = new Schema({
 const User = model("User", UserSchema)
 
 module.exports = User
-.env
+###
+
+### FILENAME:
+  .env
+### CONTENT
 PORT=3001
 DATABASE_URL=mongodb://admin:Sql2024!@vdocker:27017/inv-api?authSource=admin
 SECRET=some-special-secret-super-key
-package.json
+###
+
+### FILENAME:
+  package.json
+### CONTENT
 {
   "name": "api",
   "version": "0.0.1",
@@ -324,3 +349,12 @@ package.json
     "nodemon": "^3.1.4"
   }
 }
+
+###
+
+### FILENAME:
+  README.md
+### CONTENT
+Inventory API Endpoint
+###
+
