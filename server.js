@@ -15,7 +15,7 @@ const morgan = require("morgan") // import morgan debuger
 const cors = require("cors") // import cors middleware
 const { log } = require('mercedlogger') // import mercedlogger's log function
 const bodyParser = require("body-parser") // import body-parser middleware
-
+ 
 // ENV VARIABLES WITH DEFAULT VALUES
 const { PORT = 3000 } = process.env // get port from .env
 
