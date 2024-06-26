@@ -17,7 +17,7 @@ const { log } = require('mercedlogger') // import mercedlogger's log function
 const bodyParser = require("body-parser") // import body-parser middleware
  
 // ENV VARIABLES WITH DEFAULT VALUES
-const { PORT = 3000 } = process.env // get port from .env
+const { PORT = 3001 } = process.env // get port from .env
 
 // APPLICATION OBJECT
 const app = express() // create express app
