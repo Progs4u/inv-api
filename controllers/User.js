@@ -57,6 +57,7 @@ router.post("/signup", [
         req.body.password = await bcrypt.hash(req.body.password, 10);
         // create a new user
         const user = await User.create(req.body);
+        log.white("SIGNUP", `User ${user.username} created`);
         // send new user as response
         res.json(user);
     } catch (error) {
@@ -82,7 +83,7 @@ router.post("/login", loginLimiter, [
         // check if user exists
         const user = await User.findOne({ username: req.body.username });
         // log login-attempt by anyone
-        log.red("LOGIN", `Login attempt by ${req.body.username}`);
+        log.yellow("LOGIN", `Login attempt by ${req.body.username}`);
 
         //handle user
         if (user) {
@@ -97,7 +98,7 @@ router.post("/login", loginLimiter, [
                 });
 
                 //log user for reference
-                log.yellow("LOGIN", `User ${user.username} logged in!`);
+                log.white("LOGIN", `User ${user.username} logged in!`);
                 
                 //add token to user object
                 user.token = token;
@@ -119,11 +120,12 @@ router.post("/login", loginLimiter, [
     }
 });
 
-router.post("/logout", isLoggedIn, (req, res) => {
+router.get("/logout", isLoggedIn, (req, res) => {
     //receive token from the header, remove bearer argument
     const token = req.headers.authorization.split(" ")[1];
     //if token is valid, revoke it
     revokeToken(token);
+    log.white("LOGOUT", `User ${req.user.username} logged out and token revoked!`);
     res.json({ message: `User ${req.user.username} logged out!` });
 });
 
@@ -134,8 +136,9 @@ const crypto = require('crypto');
 router.post('/request-reset', [
   body('email').isEmail().withMessage('Enter a valid email address.')
 ], async (req, res) => {
-  const { email } = req.body;
-  const user = await User.findOne({ email });
+  const { User } = req.context.models;
+  const { username } = req.body;
+  const user = await User.findOne({ username });
   if (!user) {
     return res.status(404).json({ error: 'User not found.' });
   }
@@ -143,12 +146,13 @@ router.post('/request-reset', [
   const resetToken = crypto.randomBytes(20).toString('hex');
   user.resetPasswordToken = resetToken;
   user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
+  log.white("RESET", `Password reset request for ${username}`);
   await user.save();
 
   res.json({
     message: 'Password reset token generated.',
     resetToken,
-    resetUrl: `http://localhost:3001/reset/${resetToken}`
+    resetUrl: `https://localhost:3001/reset/${resetToken}`
   });
 });
 
@@ -156,6 +160,7 @@ router.post('/request-reset', [
 router.post('/reset/:token', [
     body('password').notEmpty().withMessage('Password cannot be empty.')
   ], async (req, res) => {
+    const { User } = req.context.models;
     const user = await User.findOne({
       resetPasswordToken: req.params.token,
       resetPasswordExpires: { $gt: Date.now() }
@@ -164,12 +169,19 @@ router.post('/reset/:token', [
     if (!user) {
       return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
     }
-  
+
+    // Check if the new password matches the old one
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    if (isMatch) {
+        return res.status(400).json({ error: 'New password must be different from the old password.' });
+    }
+    
     user.password = await bcrypt.hash(req.body.password, 10);
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
     await user.save();
-  
+    
+    log.white("RESET", `Password reset successful for ${user.username}`);
     res.json({ message: 'Password has been reset.' });
   });
   
