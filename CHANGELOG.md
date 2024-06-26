@@ -7,20 +7,16 @@
 - Role-based access control.
 - Basic inventory management endpoints.
 
-### Changed
-- N/A
-
-### Fixed
-- N/A
-
-## [1.1.0] - YYYY-MM-DD
+## [1.1.0] - 2024-06-27
 ### Added
-- (Planned) Advanced reporting and analytics features.
-- (Planned) Extended notification system with user preferences.
+- Password reset functionality for users.
+- Admin route for managing users.
+- Enhanced error handling middleware.
+- Rate limiting on login and token refresh endpoints to prevent brute-force attacks.
 
 ### Changed
-- (Planned) Performance optimizations in database queries.
+- Improved security with token revocation and blacklist functionality.
+- Updated middleware for role-based access control.
 
 ### Fixed
-- (Planned) Bug fixes and improvements.
-
+- General bug fixes and improvements in user authentication and error handling.

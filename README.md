@@ -4,11 +4,12 @@
 The Inventory Management System API is designed to manage inventory items, user authentication, and administrative controls in a secure and efficient manner. This API serves as the backend for an inventory management application and is built using Node.js, Express.js, and MongoDB.
 
 ## Features
-- **Material Management**: Add, edit, and delete materials, track inventory levels in real-time.
+- **Material Management**: (Planned) Add, edit, and delete materials, track inventory levels in real-time.
 - **User Authentication**: Secure registration and login, role-based access control.
 - **Administrative Controls**: Manage users, roles, and system settings.
-- **Notifications**: Real-time alerts for low inventory levels and user activities.
-- **Localization**: Support for multiple languages.
+- **Password Reset**: Allow users to reset their password securely.
+- **Notifications**: (Planned) Real-time alerts for low inventory levels and user activities.
+- **Localization**: (Planned) Support for multiple languages.
 
 ## Technology Stack
 - **Frontend**: Svelte, TailwindCSS
@@ -97,6 +98,36 @@ The Inventory Management System API is designed to manage inventory items, user 
         ```json
         {
             "message": "User <username> logged out!"
+        }
+        ```
+
+- **POST /user/request-reset**: Request a password reset token.
+    - Request body:
+        ```json
+        {
+            "email": "string"
+        }
+        ```
+    - Response:
+        ```json
+        {
+            "message": "Password reset token generated.",
+            "resetToken": "string",
+            "resetUrl": "string"
+        }
+        ```
+
+- **POST /user/reset/:token**: Reset the password using the reset token.
+    - Request body:
+        ```json
+        {
+            "password": "string"
+        }
+        ```
+    - Response:
+        ```json
+        {
+            "message": "Password has been reset."
         }
         ```
 
