@@ -18,6 +18,10 @@ FILES=(
   "ARCHITECTURE.md"
   "CHANGELOG.md"
   "generate_codebase.sh"
+  #tests
+  "tests/userController.test.js"
+  "tests/adminController.test.js"
+  "tests/passwortReset.test.js"
 )
 
 # Output file where all contents will be appended
