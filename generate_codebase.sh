@@ -8,13 +8,16 @@ FILES=(
   "middlewares/db.connection.js"
   "middlewares/global.js"
   "middlewares/roleCheck.js"
+  "middlewares/permissionCheck.js"
   "models/User.js"
+  "utils/permissions.js"
   ".env"
   ".gitignore"
   "package.json"
   "README.md"
   "ARCHITECTURE.md"
   "CHANGELOG.md"
+  "generate_codebase.sh"
 )
 
 # Output file where all contents will be appended
