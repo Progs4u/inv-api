@@ -44,10 +44,10 @@ app.get("/", (req, res) => {
 })
 // import user routes / controller
 app.use("/user", require("./controllers/User"));
+app.use("/admin", require("./controllers/Admin"));
 
 // import isloggedin middleware
 const { isLoggedIn } = require("./middlewares/global");
-const { createPrivateKey } = require('crypto');
 // test protected route
 app.get("/protected", isLoggedIn, (req, res) => {
     res.json({

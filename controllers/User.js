@@ -91,7 +91,7 @@ router.post("/login", loginLimiter, [
             const result = await bcrypt.compare(req.body.password, user.password);
             if (result) {
                 //sign token and send it in response
-                const token = jwt.sign({ username: user.username }, SECRET, {
+                const token = jwt.sign({ username: user.username, role: user.role}, SECRET, {
                     algorithm: "HS256", // algorithm used for header and payload encryption
                     allowInsecureKeySizes: true, // allow bigger key sizes - will check later what it exactly mean
                     expiresIn: "8h" // token will expire in 8 hours
