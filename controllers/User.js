@@ -52,7 +52,8 @@ router.post("/signup", [
         if (await User.findOne({ username: req.body.username })) {
             return res.status(400).json({ error: "User already exists!" });
         }
-
+        // ensuring that user will be within user group during creation
+        req.body.role = 'user'
         // hash the password
         req.body.password = await bcrypt.hash(req.body.password, 10);
         // create a new user

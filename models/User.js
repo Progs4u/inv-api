@@ -9,7 +9,21 @@ const UserSchema = new Schema({
     permissions: { type: [String], default: [] },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date } 
-})
+});
+
+// Method to update permissions based on role
+UserSchema.methods.updatePermissions = function () {
+    const { roles } = require('../utils/permissions');
+    this.permissions = roles[this.role] || [];
+};
+
+// Middleware to set default permissions after saving a new user
+UserSchema.pre('save', function (next) {
+    if (this.isNew) {
+        this.updatePermissions();
+    }
+    next();
+});
 
 // User model
 const User = model("User", UserSchema)

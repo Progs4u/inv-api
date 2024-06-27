@@ -11,6 +11,7 @@ FILES=(
   "middlewares/permissionCheck.js"
   "models/User.js"
   "utils/permissions.js"
+  "services/userService.js"
   ".env"
   ".gitignore"
   "package.json"

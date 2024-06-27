@@ -146,6 +146,28 @@ The Inventory Management System API is designed to manage inventory items, user 
         }
         ```
 
+### Admin Endpoints
+- **POST /admin/update-role**: Update a user's role (requires admin privileges).
+    - Request body:
+        ```json
+        {
+            "userId": "string",
+            "newRole": "string"
+        }
+        ```
+    - Response:
+        ```json
+        {
+            "message": "User role updated successfully",
+            "user": {
+                "username": "string",
+                "role": "string",
+                "permissions": ["string"]
+            }
+        }
+        ```
+
+
 ## Usage Examples
 - **Signup a new user**:
     ```sh
