@@ -51,7 +51,7 @@ const { isLoggedIn } = require("./middlewares/global");
 // test protected route
 app.get("/protected", isLoggedIn, (req, res) => {
     res.json({
-        message: "Protected route. You need to be logged in to access this route!"});
+        message: `Protected route. Youre currently logged in! Welcome user: ${req.user.username}. Your role is ${req.user.role}`});
 });
 
 // Create HTTPS server
