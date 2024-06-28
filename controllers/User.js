@@ -255,7 +255,26 @@ router.post('/reset/:token', async (req, res) => {
       res.status(500).json({ error: 'Something went wrong!', details: error.message });
     }
   });
-  
-  
+
+
+
+    // Delete own account
+    router.delete('/delete', isLoggedIn, async (req, res) => {
+        const { User } = req.context.models;
+        try {
+            const user = await User.findOneAndDelete({ username: req.user.username });
+            console.log(user);
+            if (!user) {
+                return res.status(404).json({ error: 'User not found' });
+            }
+            log.white("DELETE USER", `User ${req.user.username} deleted their own account`);
+            res.json({ message: 'User account deleted successfully' });
+        } catch (error) {
+            res.status(500).json({ error: 'Something went wrong!' });
+        }
+    });
+
+
+    
 
 module.exports = router;

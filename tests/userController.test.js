@@ -19,7 +19,6 @@ jest.mock('../models/User', () => {
   const UserSchema = new mongoose.Schema({
     username: {type: String, unique: true, required: true},
     password: {type: String, required: true},
-    email: {type: String, required: true},
     token: {type: String},
     role: { type: String, default: 'user', enum: ['user', 'admin', 'manager'] },
     permissions: { type: [String], default: [] }
@@ -64,6 +63,7 @@ describe('User Controller', () => {
   });
 
   afterAll(async () => {
+    
     await mongoose.connection.close();
     console.log('Closed test database connection');
   });
@@ -160,5 +160,23 @@ describe('User Controller', () => {
     expect(response.body).toHaveProperty('message', "Protected route. You're currently logged in! Welcome user: loginuser. Your role is user");
   });
 
-  // Add more test cases as needed
+  it('should delete the user\'s own account', async () => {
+    await request(app)
+      .post('/user/signup')
+      .send({ username: 'deleteuser', password: 'testpass' });
+
+    const loginResponse = await request(app)
+      .post('/user/login')
+      .send({ username: 'deleteuser', password: 'testpass' });
+
+    const token = loginResponse.body.token;
+
+    const deleteResponse = await request(app)
+      .delete('/user/delete')
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(deleteResponse.status).toBe(200);
+    expect(deleteResponse.body).toHaveProperty('message', 'User account deleted successfully');
+});
+
 });

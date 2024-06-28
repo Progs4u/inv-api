@@ -44,4 +44,21 @@ adminRouter.post('/update-role', permissionCheck('update:any'), async (req, res)
     }
 });
 
+// Delete any user account
+adminRouter.delete('/delete/:username', permissionCheck('delete:any'), async (req, res) => {
+    const { User } = req.context.models;
+    const { username } = req.params;
+    try {
+        const user = await User.findOneAndDelete({ username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        console.log(`Admin deleted user ${username}`);
+        res.status(200).json({ message: 'User account deleted successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Something went wrong!' });
+    }
+});
+
+
 module.exports = adminRouter;

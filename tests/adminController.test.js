@@ -23,6 +23,8 @@ jest.mock('../models/User', () => {
     permissions: { type: [String], default: [] }
   });
 
+
+
   UserSchema.methods.updatePermissions = function() {
     const { roles } = require('../utils/permissions');
     this.permissions = roles[this.role] || [];
@@ -37,6 +39,18 @@ jest.mock('../models/User', () => {
 
   return mongoose.model('User', UserSchema);
 });
+
+//jest.mock('../middlewares/roleCheck', () => () => (req, res, next) => next());
+
+jest.mock('../middlewares/permissionCheck', () => () => (req, res, next) => next());
+
+/* jest.mock('mercedlogger', () => ({
+  log: {
+    white: jest.fn(),
+  },
+})); */
+
+
 
 const userRouter = require('../controllers/User');
 const adminRouter = require('../controllers/Admin');
@@ -68,6 +82,7 @@ describe('Admin Controller', () => {
   beforeAll(async () => {
     await mongoose.connect(TEST_DB);
     console.log('Connected to test database:', TEST_DB);
+    await User.deleteMany({});
 
     // Create users for each role
     const adminUser = new User({
@@ -169,5 +184,29 @@ describe('Admin Controller', () => {
 
     expect(response.status).toBe(403);
     expect(response.body).toHaveProperty('error', 'Access denied. You do not have permission to perform this action.');
+  });
+
+  it('should delete a user account by admin', async () => {
+    // First, create a user to delete
+    await request(app)
+      .post('/user/signup')
+      .send({ username: 'userToDelete', password: 'testpass' });
+
+    const loginResponse = await request(app)
+      .post('/user/login')
+      .send({ username: 'testadmin', password: 'adminpass123' });
+  
+    console.log(loginResponse.body);
+    const adminToken = loginResponse.body.token;
+  
+    console.log('adminToken:', adminToken);
+  
+    // Now try to delete the user
+    const response = await request(app)
+      .delete('/admin/delete/userToDelete')
+      .set('Authorization', `Bearer ${adminToken}`);
+  
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty('message', 'User account deleted successfully');
   });
 });
