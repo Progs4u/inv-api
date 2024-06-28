@@ -1,3 +1,4 @@
+const User = require ("../models/User");
 require("dotenv").config(); // import dotenv
 const { Router } = require('express'); // import express router
 const bcrypt = require("bcrypt"); // import bcrypt
@@ -59,10 +60,14 @@ router.post("/signup", [
         // create a new user
         const user = await User.create(req.body);
         log.white("SIGNUP", `User ${user.username} created`);
+        
+        const userResponse = user.toObject();
+        delete userResponse.password;
+
         // send new user as response
-        res.json(user);
+        res.status(200).json({ message: userResponse});
     } catch (error) {
-        res.status(500).json({ error: "Something went wrong!" });
+        res.status(500).json({ error: "Something went wrong!", details: error.message });
     }
 });
 
@@ -127,7 +132,7 @@ router.get("/logout", isLoggedIn, (req, res) => {
     //if token is valid, revoke it
     revokeToken(token);
     log.white("LOGOUT", `User ${req.user.username} logged out and token revoked!`);
-    res.json({ message: `User ${req.user.username} logged out!` });
+    res.status(200).json({ message: `User ${req.user.username} logged out!` });
 });
 
 
@@ -135,20 +140,23 @@ const crypto = require('crypto');
 
 // Request password reset
 router.post('/request-reset', [
-  body('email').isEmail().withMessage('Enter a valid email address.')
+  body('username').notEmpty().withMessage('Username cannot be empty!'),
+  body('password').notEmpty().withMessage('Please enter a new password.').isLength({ min: 8, max: 100 }).withMessage('Password must be between 8 and 100 characters!'),
+ 
 ], async (req, res) => {
-  const { User } = req.context.models;
-  const { username } = req.body;
-  const user = await User.findOne({ username });
-  if (!user) {
-    return res.status(404).json({ error: 'User not found.' });
-  }
+    const { User } = req.context.models;
+    const { username } = req.body;
 
-  const resetToken = crypto.randomBytes(20).toString('hex');
-  user.resetPasswordToken = resetToken;
-  user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
-  log.white("RESET", `Password reset request for ${username}`);
-  await user.save();
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found.' });
+    }
+
+    const resetToken = crypto.randomBytes(20).toString('hex');
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
+
+    await user.save();
 
   res.json({
     message: 'Password reset token generated.',
@@ -158,33 +166,96 @@ router.post('/request-reset', [
 });
 
 // Reset password
-router.post('/reset/:token', [
-    body('password').notEmpty().withMessage('Password cannot be empty.')
+router.post('/reset/:token', async (req, res) => {
+    try {
+      const { User } = req.context.models;
+      const { token } = req.params;
+      const { password } = req.body;
+  
+      // Check for empty password
+      if (!password || password.trim() === '') {
+        return res.status(400).json({ error: 'Password cannot be empty.' });
+      }
+  
+      // Check password length
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+      }
+  
+      // Find user by reset token and check if it's expired
+      const user = await User.findOne({
+        resetPasswordToken: token,
+        resetPasswordExpires: { $gt: Date.now() }
+      });
+  
+      if (!user) {
+        return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+      }
+  
+      // At this point, we know we have a valid user with a valid token
+  
+      const isSamePassword = await bcrypt.compare(password, user.password);
+      if (isSamePassword) {
+        return res.status(400).json({ error: 'New password must be different from the old password.' });
+      }
+  
+      user.password = await bcrypt.hash(password, 10);
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpires = undefined;
+  
+      await user.save();
+  
+      res.json({ message: 'Password has been reset.' });
+    } catch (error) {
+      console.error('Password reset error:', error);
+      res.status(500).json({ error: 'An error occurred while resetting the password.' });
+    }
+  });
+  
+
+  router.post('/create-admin', [
+    body('username').notEmpty().withMessage('Username cannot be empty!'),
+    body('password').notEmpty().withMessage('Please enter a password.'),
   ], async (req, res) => {
     const { User } = req.context.models;
-    const user = await User.findOne({
-      resetPasswordToken: req.params.token,
-      resetPasswordExpires: { $gt: Date.now() }
-    });
+    const { username, password } = req.body;
   
-    if (!user) {
-      return res.status(400).json({ error: 'Password reset token is invalid or has expired.' });
+    try {
+      console.log('Received request to create admin:', { username });
+  
+      if (!password || password.trim() === '') {
+        return res.status(400).json({ error: 'Password cannot be empty.' });
+      }
+  
+      if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+      }
+  
+      const existingAdmin = await User.findOne({ role: 'admin' });
+      console.log('Existing admin:', existingAdmin);
+  
+      if (existingAdmin) {
+        return res.status(400).json({ error: 'Admin user already exists!' });
+      }
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+      const user = new User({
+        username,
+        password: hashedPassword,
+        role: 'admin'
+      });
+  
+      console.log('New admin user object:', user);
+      await user.save();
+      console.log('Admin user saved successfully');
+  
+      return res.status(200).json({ message: 'Admin user created successfully', user: user.toObject() });
+    } catch (error) {
+      console.error('Error in create-admin route:', error);
+      res.status(500).json({ error: 'Something went wrong!', details: error.message });
     }
-
-    // Check if the new password matches the old one
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
-    if (isMatch) {
-        return res.status(400).json({ error: 'New password must be different from the old password.' });
-    }
-    
-    user.password = await bcrypt.hash(req.body.password, 10);
-    user.resetPasswordToken = undefined;
-    user.resetPasswordExpires = undefined;
-    await user.save();
-    
-    log.white("RESET", `Password reset successful for ${user.username}`);
-    res.json({ message: 'Password has been reset.' });
   });
+  
   
 
 module.exports = router;

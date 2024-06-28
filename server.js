@@ -50,7 +50,12 @@ app.use("/admin", require("./controllers/Admin"));
 const { isLoggedIn } = require("./middlewares/global");
 // test protected route
 app.get("/protected", isLoggedIn, (req, res) => {
-    res.json({
+    if (!req.user) {
+        res.status(401).json({ error: "You are not logged in!" });
+    }
+    
+    
+    res.status(200).json({
         message: `Protected route. Youre currently logged in! Welcome user: ${req.user.username}. Your role is ${req.user.role}`});
 });
 
