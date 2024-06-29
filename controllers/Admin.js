@@ -12,7 +12,6 @@ adminRouter.use(isLoggedIn);
 adminRouter.use(roleCheck(['admin']));
 
 adminRouter.get('/test', (req, res, next) => {
-    console.log('User object:', req.user);
     next();
 }, permissionCheck('read:any'), (req, res) => {
     res.json({ message: 'Welcome Admin!' });
@@ -26,7 +25,6 @@ adminRouter.get('/test2', permissionCheck('read:any'), (req, res) => {
 adminRouter.post('/update-role', permissionCheck('update:any'), async (req, res) => {
     const { User } = req.context.models;
     const { username, role } = req.body;
-    console.log(req.body);
     try {
         const updatedUser = await User.findOne({ username: username });
         if (!updatedUser) {
@@ -57,6 +55,68 @@ adminRouter.delete('/delete/:username', permissionCheck('delete:any'), async (re
         res.status(200).json({ message: 'User account deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: 'Something went wrong!' });
+    }
+});
+
+// Update user information (except role)
+adminRouter.put('/update-user', permissionCheck('update:any'), async (req, res) => {
+    const { User } = req.context.models;
+    const { username, updates } = req.body;
+    try {
+        const user = await User.findOneAndUpdate({ username: username }, updates, { new: true });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ message: 'Username updated successfully', user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// List all users
+adminRouter.get('/list-users', permissionCheck('read:any'), async (req, res) => {
+    const { User } = req.context.models;
+    try {
+        const users = await User.find({});
+        res.json({ users });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Add permission to user
+adminRouter.post('/add-permission', permissionCheck('update:any'), async (req, res) => {
+    const { User } = req.context.models;
+    const { username, permission } = req.body;
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        if (!user.permissions.includes(permission)) {
+            user.permissions.push(permission);
+            await user.save();
+        }
+        res.status(200).json({ message: 'Permission added successfully', user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Remove permission from user
+adminRouter.post('/remove-permission', permissionCheck('update:any'), async (req, res) => {
+    const { User } = req.context.models;
+    const { username, permission } = req.body;
+    try {
+        const user = await User.findOne({ username: username });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        user.permissions = user.permissions.filter(perm => perm !== permission);
+        await user.save();
+        res.status(200).json({ message: 'Permission removed successfully', user });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     }
 });
 

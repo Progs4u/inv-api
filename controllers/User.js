@@ -67,6 +67,8 @@ router.post("/signup", [
         // send new user as response
         res.status(200).json({ message: userResponse});
     } catch (error) {
+        console.error("Error creating user:", error);
+        console.error("Stack trace:", error.stack);
         res.status(500).json({ error: "Something went wrong!", details: error.message });
     }
 });
