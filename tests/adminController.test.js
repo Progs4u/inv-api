@@ -134,6 +134,7 @@ describe('Admin Controller', () => {
   
   afterAll(async () => {
     try {
+      await User.deleteMany({});
       await mongoose.connection.close();
       console.log('Database connection closed');
     } catch (error) {

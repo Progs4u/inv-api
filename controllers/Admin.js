@@ -13,7 +13,7 @@ adminRouter.use(roleCheck(['admin']));
 
 adminRouter.get('/test', (req, res, next) => {
     next();
-}, permissionCheck('read:any'), (req, res) => {
+}, permissionCheck('read:any, write:any'), (req, res) => {
     res.json({ message: 'Welcome Admin!' });
 });
 
